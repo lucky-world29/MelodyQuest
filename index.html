@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Premium Music Player</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="ambient">
+    <div class="ambient__layer ambient__layer--one"></div>
+    <div class="ambient__layer ambient__layer--two"></div>
+    <div class="ambient__layer ambient__layer--three"></div>
+    <div class="ambient__noise"></div>
+  </div>
+
+  <main class="app-shell">
+    <section class="player-card glass">
+      <div class="player-grid">
+        <aside class="now-playing glass">
+          <div class="now-playing__top">
+            <div>
+              <p class="eyebrow">Now Playing</p>
+              <h1 class="title" id="songTitle">Mast Magan</h1>
+              <p class="meta" id="songArtist">Arijit Singh • 2 States</p>
+            </div>
+
+            <button class="icon-btn" id="favoriteBtn" aria-label="Favorite song" aria-pressed="false">
+              <span id="favoriteIcon">♡</span>
+            </button>
+          </div>
+
+          <div class="art-wrap">
+            <div class="art-glow"></div>
+            <img id="coverArt" class="cover-art" src="assets/images/cover.jpg" alt="Album cover" />
+            <div class="vinyl-ring"></div>
+          </div>
+
+          <div class="track-info">
+            <div class="track-info__row">
+              <span class="track-name" id="trackName">Mast Magan</span>
+              <span class="track-time" id="currentTime">0:00</span>
+            </div>
+
+            <div class="progress" id="progressBar" aria-label="Progress bar">
+              <div class="progress__fill" id="progressFill"></div>
+              <div class="progress__shine"></div>
+            </div>
+
+            <div class="track-info__row">
+              <span class="track-subtitle">Premium music player</span>
+              <span class="track-time" id="duration">0:00</span>
+            </div>
+          </div>
+
+          <div class="waveform" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+
+          <div class="controls">
+            <button class="icon-btn" id="shuffleBtn" aria-label="Shuffle">↻</button>
+            <button class="icon-btn" id="prevBtn" aria-label="Previous">⏮</button>
+            <button class="play-btn" id="playBtn" aria-label="Play">
+              <span id="playIcon">▶</span>
+            </button>
+            <button class="icon-btn" id="nextBtn" aria-label="Next">⏭</button>
+            <button class="icon-btn" id="repeatBtn" aria-label="Repeat">⟲</button>
+          </div>
+
+          <div class="extras">
+            <label class="volume">
+              <span>🔊</span>
+              <input id="volumeRange" type="range" min="0" max="100" value="90" />
+            </label>
+          </div>
+
+          <audio id="audio" preload="metadata">
+            <source id="audioSource" src="assets/audio/mast-magan.mp3" type="audio/mpeg" />
+          </audio>
+        </aside>
+
+        <section class="playlist-panel glass">
+          <div class="playlist-panel__head">
+            <div>
+              <p class="eyebrow">Playlist</p>
+              <h2>Unlimited songs</h2>
+            </div>
+            <div class="status-chip" id="statusChip">Paused</div>
+          </div>
+
+          <p class="playlist-note">
+            Add as many songs as you want in <code>script.js</code>. Double-click any item to play it.
+          </p>
+
+          <div class="playlist-actions">
+            <button class="pill-btn" id="shuffleAllBtn">Shuffle</button>
+            <button class="pill-btn" id="repeatModeBtn">Repeat: Off</button>
+          </div>
+
+          <div class="playlist-scroll">
+            <div id="playlist" class="playlist"></div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
