@@ -5,6 +5,13 @@ const songs = [
     cover: "assets/images/cover.jpg",
     audio: "assets/audio/mast-magan.mp3",
     liked: false
+  },
+  {
+    title: "Pashmina",
+    artist: "Jubin Nautiyal • Pashmina 2025",
+    cover: "assets/images/pashmina.jpg",
+    audio: "assets/audio/pashmina.mp3",
+    liked: false
   }
   // Add more songs here:
   // {
