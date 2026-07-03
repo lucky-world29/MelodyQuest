@@ -12,7 +12,14 @@ const songs = [
     cover: "assets/images/pashmina.jpg",
     audio: "assets/audio/pashmina.mp3",
     liked: false
-  }
+  },
+  {
+  title: "Saware",
+  artist: "Arijit Singh • Phantom",
+  cover: "assets/images/saware.jpg",
+  audio: "assets/audio/saware.mp3",
+  liked: false
+}
   // Add more songs here:
   // {
   //   title: "Song Name",
