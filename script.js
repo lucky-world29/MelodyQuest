@@ -14,12 +14,19 @@ const songs = [
     liked: false
   },
   {
-  title: "Saware",
-  artist: "Arijit Singh • Phantom",
-  cover: "assets/images/saware.jpg",
-  audio: "assets/audio/saware.mp3",
-  liked: false
-}
+    title: "Saware",
+    artist: "Arijit Singh • Phantom",
+    cover: "assets/images/saware.jpg",
+    audio: "assets/audio/saware.mp3",
+    liked: false
+  },
+  {
+    title: "Tum Se Hi",
+    artist: "Mohit Chauhan • Jab We Met",
+    cover: "assets/images/tum-se-hi.jpg",
+    audio: "assets/audio/tum-se-hi.mp3",
+    liked: false
+  }
   // Add more songs here:
   // {
   //   title: "Song Name",
@@ -158,7 +165,7 @@ function loadSong(index, autoPlay = false) {
   progressFill.style.width = "0%";
 
   if (autoPlay) {
-    audio.play().catch(() => {});
+    audio.play().catch(() => { });
   }
 }
 
@@ -216,7 +223,7 @@ function prevSong() {
 
 function togglePlay() {
   if (audio.paused) {
-    audio.play().catch(() => {});
+    audio.play().catch(() => { });
   } else {
     audio.pause();
   }
@@ -259,7 +266,7 @@ audio.addEventListener("pause", () => setPlayingState(false));
 audio.addEventListener("ended", () => {
   if (repeatMode === 2) {
     audio.currentTime = 0;
-    audio.play().catch(() => {});
+    audio.play().catch(() => { });
     return;
   }
   if (shuffleMode || repeatMode === 1) {
