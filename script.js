@@ -26,6 +26,12 @@ const songs = [
     cover: "assets/images/tum-se-hi.jpg",
     audio: "assets/audio/tum-se-hi.mp3",
     liked: false
+  }, {
+    title: "Agar Tum Saath Ho",
+    artist: "Alka Yagnik & Arijit Singh • Tamasha",
+    cover: "assets/images/agar-tum-saath-ho.jpg",
+    audio: "assets/audio/agar-tum-saath-ho.mp3",
+    liked: false
   }
   // Add more songs here:
   // {
