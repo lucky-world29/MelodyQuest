@@ -39,6 +39,13 @@ const songs = [
     cover: "assets/images/raabta.jpg",
     audio: "assets/audio/raabta.mp3",
     liked: false
+  },
+  {
+    title: "Khairiyat",
+    artist: "Arijit Singh • Chhichhore",
+    cover: "assets/images/khairiyat.jpg",
+    audio: "assets/audio/khairiyat.mp3",
+    liked: false
   }
   // Add more songs here:
   // {
