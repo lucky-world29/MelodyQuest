@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Premium Music Player</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div class="ambient">
     <div class="ambient__layer ambient__layer--one"></div>
@@ -56,10 +59,11 @@
             </div>
           </div>
 
-          <div class="waveform" aria-hidden="true">
+          <!-- <div class="waveform" aria-hidden="true">
             <span></span><span></span><span></span><span></span><span></span>
             <span></span><span></span><span></span><span></span><span></span>
-          </div>
+          </div> -->
+          <canvas id="visualizer" class="visualizer" aria-hidden="true"></canvas>
 
           <div class="controls">
             <button class="icon-btn" id="shuffleBtn" aria-label="Shuffle">↻</button>
@@ -74,7 +78,10 @@
           <div class="extras">
             <label class="volume">
               <span>🔊</span>
+
               <input id="volumeRange" type="range" min="0" max="100" value="90" />
+
+              <span id="volumeValue" class="volume-value">90%</span>
             </label>
           </div>
 
@@ -95,7 +102,9 @@
           <p class="playlist-note">
             Add as many songs as you want in <code>script.js</code>. Double-click any item to play it.
           </p>
-
+          <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 Search songs or artists..." />
+          </div>
           <div class="playlist-actions">
             <button class="pill-btn" id="shuffleAllBtn">Shuffle</button>
             <button class="pill-btn" id="repeatModeBtn">Repeat: Off</button>
@@ -109,6 +118,9 @@
     </section>
   </main>
 
+  <div id="toastContainer" class="toast-container"></div>
+
   <script src="script.js"></script>
 </body>
+
 </html>

@@ -88,12 +88,24 @@ const nextBtn = document.getElementById("nextBtn");
 const shuffleAllBtn = document.getElementById("shuffleAllBtn");
 const repeatModeBtn = document.getElementById("repeatModeBtn");
 const playlist = document.getElementById("playlist");
+const visualizer = document.getElementById("visualizer");
+const vizCtx = visualizer.getContext("2d");
+const toastContainer = document.getElementById("toastContainer");
+let volumeHideTimer;
+let audioContext = null;
+let analyser = null;
+let sourceNode = null;
+let freqData = null;
+let vizFrame = null;
+const searchInput = document.getElementById("searchInput");
 
 let currentIndex = 0;
-let repeatMode = 0; // 0 off, 1 all, 2 one
-let shuffleMode = false;
+// let repeatMode = 0; // 0 off, 1 all, 2 one
+let repeatMode = Number(localStorage.getItem("repeatMode") ?? 0); // 0 off, 1 all, 2 one
+let shuffleMode = JSON.parse(localStorage.getItem("shuffleMode") ?? "false");
+// let shuffleMode = false;
 let userSeeking = false;
-
+const volumeValue = document.getElementById("volumeValue");
 const likedSongs = new Set(JSON.parse(localStorage.getItem("likedSongs") || "[]"));
 
 function formatTime(seconds) {
@@ -120,39 +132,63 @@ function updateRepeatUI() {
   repeatBtn.classList.toggle("active", repeatMode !== 0);
 }
 
-function renderPlaylist() {
-  playlist.innerHTML = "";
+function renderPlaylist(filter = "") {
 
-  songs.forEach((song, index) => {
-    const item = document.createElement("article");
-    item.className = "song-item";
-    item.dataset.index = String(index);
+    playlist.innerHTML = "";
 
-    const liked = likedSongs.has(index);
+    songs.forEach((song,index)=>{
 
-    item.innerHTML = `
-      <img class="song-cover" src="${song.cover}" alt="${song.title}">
-      <div class="song-meta">
-        <p class="song-title">${song.title}</p>
-        <p class="song-artist">${song.artist}</p>
-      </div>
-      <div class="song-actions">
-        <button class="like-btn ${liked ? "liked" : ""}" data-like="${index}" aria-label="Like ${song.title}">${liked ? "❤" : "♡"}</button>
-      </div>
-    `;
+        const text =
+            (song.title + " " + song.artist).toLowerCase();
 
-    item.addEventListener("click", () => playSong(index));
-    item.addEventListener("dblclick", () => playSong(index));
+        if(!text.includes(filter.toLowerCase()))
+            return;
 
-    item.querySelector("[data-like]").addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleLike(index);
+        const liked = likedSongs.has(index);
+
+        const item = document.createElement("article");
+
+        item.className="song-item";
+
+        item.dataset.index=index;
+
+        item.innerHTML=`
+
+        <img class="song-cover"
+            src="${song.cover}"
+            alt="${song.title}">
+
+        <div class="song-meta">
+            <p class="song-title">${song.title}</p>
+            <p class="song-artist">${song.artist}</p>
+        </div>
+
+        <div class="song-actions">
+            <button
+                class="like-btn ${liked ? "liked":""}"
+                data-like="${index}">
+                ${liked ? "❤":"♡"}
+            </button>
+        </div>
+        `;
+
+       item.addEventListener("click", () => playSong(index));
+item.addEventListener("dblclick", () => playSong(index));
+
+        item.querySelector("[data-like]").onclick=(e)=>{
+
+            e.stopPropagation();
+
+            toggleLike(index);
+
+        };
+
+        playlist.appendChild(item);
+
     });
 
-    playlist.appendChild(item);
-  });
+    highlightActiveSong();
 
-  highlightActiveSong();
 }
 
 function highlightActiveSong() {
@@ -166,6 +202,7 @@ function loadSong(index, autoPlay = false) {
   if (!song) return;
 
   currentIndex = index;
+  localStorage.setItem("currentSong", index);
   audio.pause();
   audioSource.src = song.audio;
   audio.load();
@@ -200,6 +237,14 @@ function toggleLike(index = currentIndex) {
     likedSongs.add(index);
   }
   persistLikedSongs();
+
+showToast(
+likedSongs.has(index)
+?
+"❤️ Added to Favorites"
+:
+"💔 Removed from Favorites"
+);
   favoriteIcon.textContent = likedSongs.has(index) ? "❤" : "♡";
   favoriteBtn.classList.toggle("active", likedSongs.has(index));
   favoriteBtn.setAttribute("aria-pressed", likedSongs.has(index) ? "true" : "false");
@@ -249,15 +294,41 @@ function togglePlay() {
   }
 }
 
+// function toggleShuffle() {
+//   shuffleMode = !shuffleMode;
+//   shuffleBtn.classList.toggle("active", shuffleMode);
+//   shuffleAllBtn.classList.toggle("active", shuffleMode);
+// }
 function toggleShuffle() {
   shuffleMode = !shuffleMode;
+
+  localStorage.setItem("shuffleMode", JSON.stringify(shuffleMode));
+
+  showToast(
+shuffleMode
+?
+"🔀 Shuffle Enabled"
+:
+"🔀 Shuffle Disabled"
+);
+
   shuffleBtn.classList.toggle("active", shuffleMode);
   shuffleAllBtn.classList.toggle("active", shuffleMode);
 }
 
 function cycleRepeatMode() {
   repeatMode = (repeatMode + 1) % 3;
+  localStorage.setItem("repeatMode", repeatMode);
   updateRepeatUI();
+  const repeatText=[
+    "⛔ Repeat Off",
+    "🔁 Repeat All",
+    "🔂 Repeat One"
+];
+
+showToast(
+repeatText[repeatMode]
+);
 }
 
 function seekTo(clientX) {
@@ -268,11 +339,126 @@ function seekTo(clientX) {
   }
 }
 
+function resizeVisualizer() {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = visualizer.getBoundingClientRect();
+
+  visualizer.width = Math.max(1, Math.floor(rect.width * dpr));
+  visualizer.height = Math.max(1, Math.floor(rect.height * dpr));
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.arcTo(x + w, y, x + w, y + h, radius);
+  ctx.arcTo(x + w, y + h, x, y + h, radius);
+  ctx.arcTo(x, y + h, x, y, radius);
+  ctx.arcTo(x, y, x + w, y, radius);
+  ctx.closePath();
+}
+
+function initVisualizer() {
+  if (audioContext) return;
+
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  audioContext = new AudioCtx();
+
+  analyser = audioContext.createAnalyser();
+  analyser.fftSize = 256;
+  analyser.smoothingTimeConstant = 0.86;
+
+  freqData = new Uint8Array(analyser.frequencyBinCount);
+
+  sourceNode = audioContext.createMediaElementSource(audio);
+  sourceNode.connect(analyser);
+  analyser.connect(audioContext.destination);
+
+  resizeVisualizer();
+}
+
+function drawVisualizer() {
+  if (!analyser || !freqData) return;
+
+  vizFrame = requestAnimationFrame(drawVisualizer);
+
+  analyser.getByteFrequencyData(freqData);
+
+  const ctx = vizCtx;
+  const w = visualizer.width;
+  const h = visualizer.height;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // soft background glow
+  const bg = ctx.createLinearGradient(0, 0, 0, h);
+  bg.addColorStop(0, "rgba(139,92,246,.10)");
+  bg.addColorStop(1, "rgba(3,6,22,.55)");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+
+  const bars = 48;
+  const gap = Math.max(2, w * 0.008);
+  const usableWidth = w - gap * (bars + 1);
+  const barWidth = usableWidth / bars;
+  const maxBarHeight = h * 0.70;
+  const centerY = h * 0.50;
+
+  const grad = ctx.createLinearGradient(0, 0, w, 0);
+  grad.addColorStop(0, "#22d3ee");
+  grad.addColorStop(0.5, "#8b5cf6");
+  grad.addColorStop(1, "#ec4899");
+
+  for (let i = 0; i < bars; i++) {
+    const dataIndex = Math.floor((i / bars) * freqData.length);
+    const value = freqData[dataIndex] / 255;
+    const eased = Math.pow(value, 1.35);
+
+    const barH = 10 + eased * maxBarHeight;
+    const x = gap + i * (barWidth + gap);
+    const y = centerY - barH / 2;
+
+    // glow
+    ctx.save();
+    ctx.shadowBlur = 22;
+    ctx.shadowColor = "rgba(139,92,246,.55)";
+    ctx.fillStyle = grad;
+    roundRect(ctx, x, y, barWidth, barH, barWidth / 2);
+    ctx.fill();
+    ctx.restore();
+
+    // reflection
+    ctx.save();
+    ctx.globalAlpha = 0.18;
+    ctx.translate(0, h + 10);
+    ctx.scale(1, -1);
+    ctx.fillStyle = grad;
+    roundRect(ctx, x, y, barWidth, Math.min(barH, h * 0.34), barWidth / 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // center line glow
+  ctx.save();
+  ctx.globalAlpha = 0.12;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, centerY - 1, w, 2);
+  ctx.restore();
+}
+
 audio.addEventListener("loadedmetadata", () => {
+  const savedPosition =
+    Number(localStorage.getItem("songPosition") || 0);
+
+audio.currentTime = savedPosition;
   durationEl.textContent = formatTime(audio.duration);
 });
 
 audio.addEventListener("timeupdate", () => {
+  localStorage.setItem(
+    "songPosition",
+    audio.currentTime
+);
   if (userSeeking) return;
   currentTimeEl.textContent = formatTime(audio.currentTime);
   if (audio.duration) {
@@ -280,9 +466,36 @@ audio.addEventListener("timeupdate", () => {
   }
 });
 
-audio.addEventListener("play", () => setPlayingState(true));
-audio.addEventListener("pause", () => setPlayingState(false));
+// audio.addEventListener("play", () => setPlayingState(true));
+// audio.addEventListener("pause", () => setPlayingState(false));
+audio.addEventListener("play",()=>{
 
+    setPlayingState(true);
+
+    showToast(
+        `▶ Playing: ${songs[currentIndex].title}`
+    );
+
+});
+
+audio.addEventListener("pause",()=>{
+
+    setPlayingState(false);
+
+    showToast("⏸ Paused");
+
+});
+audio.addEventListener("play", async () => {
+  initVisualizer();
+
+  if (audioContext && audioContext.state === "suspended") {
+    await audioContext.resume().catch(() => {});
+  }
+
+  if (!vizFrame) {
+    drawVisualizer();
+  }
+});
 audio.addEventListener("ended", () => {
   if (repeatMode === 2) {
     audio.currentTime = 0;
@@ -306,7 +519,26 @@ repeatModeBtn.addEventListener("click", cycleRepeatMode);
 favoriteBtn.addEventListener("click", () => toggleLike(currentIndex));
 
 volumeRange.addEventListener("input", () => {
-  audio.volume = Number(volumeRange.value) / 100;
+
+    audio.volume = Number(volumeRange.value) / 100;
+
+    localStorage.setItem(
+        "volume",
+        volumeRange.value
+    );
+
+    volumeValue.textContent = `${volumeRange.value}%`;
+
+    volumeValue.classList.add("show");
+
+    clearTimeout(volumeHideTimer);
+
+    volumeHideTimer = setTimeout(() => {
+
+        volumeValue.classList.remove("show");
+
+    },1000);
+
 });
 
 progressBar.addEventListener("click", (e) => seekTo(e.clientX));
@@ -358,14 +590,65 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+function showToast(message){
+
+    const toast=document.createElement("div");
+
+    toast.className="toast";
+
+    toast.textContent=message;
+
+    toastContainer.appendChild(toast);
+
+    requestAnimationFrame(()=>{
+
+        toast.classList.add("show");
+
+    });
+
+    setTimeout(()=>{
+
+        toast.classList.remove("show");
+
+        setTimeout(()=>{
+
+            toast.remove();
+
+        },350);
+
+    },3000);
+
+}
+
 function init() {
   if (!songs.length) return;
 
-  audio.volume = Number(volumeRange.value) / 100;
+  const savedVolume =
+    Number(localStorage.getItem("volume") || 90);
+
+  volumeRange.value = savedVolume;
+  volumeValue.textContent = `${savedVolume}%`;
+  audio.volume = savedVolume / 100;
+
   updateRepeatUI();
+
+  shuffleBtn.classList.toggle("active", shuffleMode);
+  shuffleAllBtn.classList.toggle("active", shuffleMode);
+
+  const savedSong =
+    Number(localStorage.getItem("currentSong") || 0);
+
+  loadSong(savedSong, false);
+
   renderPlaylist();
-  loadSong(0, false);
+  resizeVisualizer();
   setPlayingState(false);
 }
 
 init();
+window.addEventListener("resize", resizeVisualizer);
+searchInput.addEventListener("input", () => {
+
+    renderPlaylist(searchInput.value);
+
+});
