@@ -32,6 +32,13 @@ const songs = [
     cover: "assets/images/agar-tum-saath-ho.jpg",
     audio: "assets/audio/agar-tum-saath-ho.mp3",
     liked: false
+  },
+  {
+    title: "Raabta",
+    artist: "Arijit Singh • Agent Vinod",
+    cover: "assets/images/raabta.jpg",
+    audio: "assets/audio/raabta.mp3",
+    liked: false
   }
   // Add more songs here:
   // {
