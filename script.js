@@ -46,6 +46,13 @@ const songs = [
     cover: "assets/images/khairiyat.jpg",
     audio: "assets/audio/khairiyat.mp3",
     liked: false
+  },
+  {
+    title: "Kesariya",
+    artist: "Arijit Singh • Brahmāstra",
+    cover: "assets/images/kesariya.jpg",
+    audio: "assets/audio/kesariya.mp3",
+    liked: false
   }
   // Add more songs here:
   // {
@@ -134,25 +141,25 @@ function updateRepeatUI() {
 
 function renderPlaylist(filter = "") {
 
-    playlist.innerHTML = "";
+  playlist.innerHTML = "";
 
-    songs.forEach((song,index)=>{
+  songs.forEach((song, index) => {
 
-        const text =
-            (song.title + " " + song.artist).toLowerCase();
+    const text =
+      (song.title + " " + song.artist).toLowerCase();
 
-        if(!text.includes(filter.toLowerCase()))
-            return;
+    if (!text.includes(filter.toLowerCase()))
+      return;
 
-        const liked = likedSongs.has(index);
+    const liked = likedSongs.has(index);
 
-        const item = document.createElement("article");
+    const item = document.createElement("article");
 
-        item.className="song-item";
+    item.className = "song-item";
 
-        item.dataset.index=index;
+    item.dataset.index = index;
 
-        item.innerHTML=`
+    item.innerHTML = `
 
         <img class="song-cover"
             src="${song.cover}"
@@ -165,29 +172,29 @@ function renderPlaylist(filter = "") {
 
         <div class="song-actions">
             <button
-                class="like-btn ${liked ? "liked":""}"
+                class="like-btn ${liked ? "liked" : ""}"
                 data-like="${index}">
-                ${liked ? "❤":"♡"}
+                ${liked ? "❤" : "♡"}
             </button>
         </div>
         `;
 
-       item.addEventListener("click", () => playSong(index));
-item.addEventListener("dblclick", () => playSong(index));
+    item.addEventListener("click", () => playSong(index));
+    item.addEventListener("dblclick", () => playSong(index));
 
-        item.querySelector("[data-like]").onclick=(e)=>{
+    item.querySelector("[data-like]").onclick = (e) => {
 
-            e.stopPropagation();
+      e.stopPropagation();
 
-            toggleLike(index);
+      toggleLike(index);
 
-        };
+    };
 
-        playlist.appendChild(item);
+    playlist.appendChild(item);
 
-    });
+  });
 
-    highlightActiveSong();
+  highlightActiveSong();
 
 }
 
@@ -238,13 +245,13 @@ function toggleLike(index = currentIndex) {
   }
   persistLikedSongs();
 
-showToast(
-likedSongs.has(index)
-?
-"❤️ Added to Favorites"
-:
-"💔 Removed from Favorites"
-);
+  showToast(
+    likedSongs.has(index)
+      ?
+      "❤️ Added to Favorites"
+      :
+      "💔 Removed from Favorites"
+  );
   favoriteIcon.textContent = likedSongs.has(index) ? "❤" : "♡";
   favoriteBtn.classList.toggle("active", likedSongs.has(index));
   favoriteBtn.setAttribute("aria-pressed", likedSongs.has(index) ? "true" : "false");
@@ -305,12 +312,12 @@ function toggleShuffle() {
   localStorage.setItem("shuffleMode", JSON.stringify(shuffleMode));
 
   showToast(
-shuffleMode
-?
-"🔀 Shuffle Enabled"
-:
-"🔀 Shuffle Disabled"
-);
+    shuffleMode
+      ?
+      "🔀 Shuffle Enabled"
+      :
+      "🔀 Shuffle Disabled"
+  );
 
   shuffleBtn.classList.toggle("active", shuffleMode);
   shuffleAllBtn.classList.toggle("active", shuffleMode);
@@ -320,15 +327,15 @@ function cycleRepeatMode() {
   repeatMode = (repeatMode + 1) % 3;
   localStorage.setItem("repeatMode", repeatMode);
   updateRepeatUI();
-  const repeatText=[
+  const repeatText = [
     "⛔ Repeat Off",
     "🔁 Repeat All",
     "🔂 Repeat One"
-];
+  ];
 
-showToast(
-repeatText[repeatMode]
-);
+  showToast(
+    repeatText[repeatMode]
+  );
 }
 
 function seekTo(clientX) {
@@ -450,7 +457,7 @@ audio.addEventListener("loadedmetadata", () => {
   const savedPosition =
     Number(localStorage.getItem("songPosition") || 0);
 
-audio.currentTime = savedPosition;
+  audio.currentTime = savedPosition;
   durationEl.textContent = formatTime(audio.duration);
 });
 
@@ -458,7 +465,7 @@ audio.addEventListener("timeupdate", () => {
   localStorage.setItem(
     "songPosition",
     audio.currentTime
-);
+  );
   if (userSeeking) return;
   currentTimeEl.textContent = formatTime(audio.currentTime);
   if (audio.duration) {
@@ -468,28 +475,28 @@ audio.addEventListener("timeupdate", () => {
 
 // audio.addEventListener("play", () => setPlayingState(true));
 // audio.addEventListener("pause", () => setPlayingState(false));
-audio.addEventListener("play",()=>{
+audio.addEventListener("play", () => {
 
-    setPlayingState(true);
+  setPlayingState(true);
 
-    showToast(
-        `▶ Playing: ${songs[currentIndex].title}`
-    );
+  showToast(
+    `▶ Playing: ${songs[currentIndex].title}`
+  );
 
 });
 
-audio.addEventListener("pause",()=>{
+audio.addEventListener("pause", () => {
 
-    setPlayingState(false);
+  setPlayingState(false);
 
-    showToast("⏸ Paused");
+  showToast("⏸ Paused");
 
 });
 audio.addEventListener("play", async () => {
   initVisualizer();
 
   if (audioContext && audioContext.state === "suspended") {
-    await audioContext.resume().catch(() => {});
+    await audioContext.resume().catch(() => { });
   }
 
   if (!vizFrame) {
@@ -520,24 +527,24 @@ favoriteBtn.addEventListener("click", () => toggleLike(currentIndex));
 
 volumeRange.addEventListener("input", () => {
 
-    audio.volume = Number(volumeRange.value) / 100;
+  audio.volume = Number(volumeRange.value) / 100;
 
-    localStorage.setItem(
-        "volume",
-        volumeRange.value
-    );
+  localStorage.setItem(
+    "volume",
+    volumeRange.value
+  );
 
-    volumeValue.textContent = `${volumeRange.value}%`;
+  volumeValue.textContent = `${volumeRange.value}%`;
 
-    volumeValue.classList.add("show");
+  volumeValue.classList.add("show");
 
-    clearTimeout(volumeHideTimer);
+  clearTimeout(volumeHideTimer);
 
-    volumeHideTimer = setTimeout(() => {
+  volumeHideTimer = setTimeout(() => {
 
-        volumeValue.classList.remove("show");
+    volumeValue.classList.remove("show");
 
-    },1000);
+  }, 1000);
 
 });
 
@@ -590,33 +597,33 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-function showToast(message){
+function showToast(message) {
 
-    const toast=document.createElement("div");
+  const toast = document.createElement("div");
 
-    toast.className="toast";
+  toast.className = "toast";
 
-    toast.textContent=message;
+  toast.textContent = message;
 
-    toastContainer.appendChild(toast);
+  toastContainer.appendChild(toast);
 
-    requestAnimationFrame(()=>{
+  requestAnimationFrame(() => {
 
-        toast.classList.add("show");
+    toast.classList.add("show");
 
-    });
+  });
 
-    setTimeout(()=>{
+  setTimeout(() => {
 
-        toast.classList.remove("show");
+    toast.classList.remove("show");
 
-        setTimeout(()=>{
+    setTimeout(() => {
 
-            toast.remove();
+      toast.remove();
 
-        },350);
+    }, 350);
 
-    },3000);
+  }, 3000);
 
 }
 
@@ -649,6 +656,6 @@ init();
 window.addEventListener("resize", resizeVisualizer);
 searchInput.addEventListener("input", () => {
 
-    renderPlaylist(searchInput.value);
+  renderPlaylist(searchInput.value);
 
 });
